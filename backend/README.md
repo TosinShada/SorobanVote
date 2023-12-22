@@ -19,7 +19,7 @@ Make sure to start from a clean setup:
 yarn stream:clean
 ```
 
-### Deploy on Futurenet
+### Deploy on Testnet
 
 0. Make sure you have soroban-cli installed, as explained above
 
