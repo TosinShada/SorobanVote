@@ -1,7 +1,7 @@
-Soroban Payment Streaming Dapp
+Soroban Vote Dapp
 =================================
 
-This is a Soroban Smart Contract project showing how to stream payments to each other. It is built using [Soroban](https://soroban.stellar.org/), [Next.js](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/).
+This is a Soroban Smart Contract project showing how to create a proposal and have other people vote on the proposal. It is built using [Soroban](https://soroban.stellar.org/), [Next.js](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/).
 
 Frontend
 --------
