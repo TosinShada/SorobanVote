@@ -10,10 +10,14 @@ mod storage_types;
 mod test;
 mod testutils;
 
+/// Get the current ledger timestamp
+/// The function returns the current ledger timestamp.
 fn get_ledger_timestamp(e: &Env) -> u64 {
     e.ledger().timestamp()
 }
 
+/// Get the proposal details
+/// The function returns the details of a specific proposal.
 fn get_proposal(e: &Env, proposal_id: &u128) -> Proposal {
     e.storage()
         .persistent()
@@ -21,6 +25,10 @@ fn get_proposal(e: &Env, proposal_id: &u128) -> Proposal {
         .expect("Proposal is inactive or doesn't exist")
 }
 
+/// Get the next proposal ID
+/// The function returns the next proposal ID.
+/// It increments the current ID and stores it in persistent storage.
+/// The function also extends the contract's lifetime.
 fn get_next_proposal_id(e: &Env) -> u128 {
     let current_id = e
         .storage()
@@ -40,6 +48,10 @@ fn get_next_proposal_id(e: &Env) -> u128 {
     current_id
 }
 
+/// Get the proposals created by a user
+/// The function returns the list of proposals created by a specific user.
+/// It retrieves the list from persistent storage.
+/// The function also extends the contract's lifetime.
 fn get_proposals_by_user(e: &Env) -> Vec<u128> {
     e.storage()
         .persistent()
@@ -47,6 +59,9 @@ fn get_proposals_by_user(e: &Env) -> Vec<u128> {
         .unwrap_or(Vec::new(&e))
 }
 
+/// Set the proposals created by a user
+/// The function updates the list of proposals created by a specific user with the new proposal ID.
+/// It stores the list in persistent storage.
 fn set_proposal_by_user(e: &Env, proposal_id: &u128) {
     // Get the array of proposals for the user
     let mut proposal_ids = get_proposals_by_user(&e);
@@ -65,6 +80,9 @@ struct Vote;
 #[contractimpl]
 #[allow(clippy::needless_pass_by_value)]
 impl Vote {
+    /// Initialize the contract
+    /// This function can only be called once per contract instance
+    /// It checks whether the contract is already initialized and, if not, creates the initial NextProposalId and extends the contract's lifetime.
     pub fn initialize(e: Env) {
         assert!(
             !e.storage().instance().has(&DataKey::NextProposalId),
@@ -79,33 +97,20 @@ impl Vote {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
     }
 
+    /// Get the status of a proposal
+    /// Returns the status of the proposal
     pub fn status(e: Env, proposal_id: u128) -> ProposalStatus {
-        let mut proposal = get_proposal(&e, &proposal_id);
+        let proposal = get_proposal(&e, &proposal_id);
 
-        if proposal.status != ProposalStatus::Active {
-            return proposal.status;
-        }
-
-        if proposal.vote_count >= proposal.goal {
-            proposal.is_active = false;
-            proposal.status = ProposalStatus::Ended;
-
-            e.storage()
-                .persistent()
-                .set(&DataKey::Proposals(proposal_id), &proposal);
-            e.storage().persistent().extend_ttl(
-                &DataKey::Proposals(proposal_id),
-                LIFETIME_THRESHOLD,
-                BUMP_AMOUNT,
-            );
-            // emit events
-            events::proposal_reached_target(&e, proposal_id, proposal.goal);
-            return proposal.status;
-        }
-
-        return ProposalStatus::Active;
+        return proposal.status;
     }
 
+    /// Create a new proposal
+    /// The proposal is created with the following parameters: name, description, goal
+    /// The function allows the users to create a new voting proposal.
+    /// It performs validation checks, including verifying the sender's authorization, generates a unique proposal ID, and stores the proposal details in persistent storage.
+    /// The function emits relevant events to notify other stakeholders.
+    /// Returns the proposal ID
     pub fn create_proposal(
         e: Env,
         sender: Address,
@@ -147,6 +152,11 @@ impl Vote {
         proposal_id
     }
 
+    /// Vote for a proposal
+    /// The function enables users to cast their votes for a specific proposal.
+    /// It checks the proposal's status, updates the vote count, and emits relevant events to notify other stakeholders.
+    /// The function performs validation checks, including verifying the sender's authorization, and checks whether the proposal is active.
+    /// If the proposal is not active, the function reverts.
     pub fn vote(e: Env, proposal_id: u128, voter: Address) {
         voter.require_auth();
         let mut proposal = get_proposal(&e, &proposal_id);
@@ -155,22 +165,45 @@ impl Vote {
             proposal.status == ProposalStatus::Active,
             "proposal is not active"
         );
-        proposal.last_voted_at = get_ledger_timestamp(&e);
-        proposal.vote_count += 1;
-        e.storage()
-            .persistent()
-            .set(&DataKey::Proposals(proposal_id), &proposal);
-        e.storage().persistent().extend_ttl(
-            &DataKey::Proposals(proposal_id),
-            LIFETIME_THRESHOLD,
-            BUMP_AMOUNT,
-        );
 
-        // emit events
-        events::proposal_voted(&e, proposal_id, voter);
+        // Check if the proposal has reached its goal and update the status accordingly
+        // If the proposal has reached its goal, the function emits relevant events to notify other stakeholders and stops execution.
+        if proposal.vote_count >= proposal.goal {
+            proposal.is_active = false;
+            proposal.status = ProposalStatus::Ended;
+
+            e.storage()
+                .persistent()
+                .set(&DataKey::Proposals(proposal_id), &proposal);
+            e.storage().persistent().extend_ttl(
+                &DataKey::Proposals(proposal_id),
+                LIFETIME_THRESHOLD,
+                BUMP_AMOUNT,
+            );
+            // emit events
+            events::proposal_reached_target(&e, proposal_id, proposal.goal);
+        } else {
+            proposal.last_voted_at = get_ledger_timestamp(&e);
+            proposal.vote_count += 1;
+            e.storage()
+                .persistent()
+                .set(&DataKey::Proposals(proposal_id), &proposal);
+            e.storage().persistent().extend_ttl(
+                &DataKey::Proposals(proposal_id),
+                LIFETIME_THRESHOLD,
+                BUMP_AMOUNT,
+            );
+
+            // emit events
+            events::proposal_voted(&e, proposal_id, voter);
+        }
     }
 
-    // Cancel Proposal
+    /// Cancel Proposal
+    /// The function enables the creator of a proposal to cancel it.
+    /// It performs validation checks, including verifying the sender's authorization, and checks whether the proposal is active.
+    /// If the proposal is not active, the function reverts.
+    /// The function updates the proposal's status and emits relevant events to notify other stakeholders.
     pub fn cancel_proposal(e: Env, sender: Address, proposal_id: u128) {
         sender.require_auth();
         let mut proposal = get_proposal(&e, &proposal_id);
@@ -197,10 +230,14 @@ impl Vote {
         events::proposal_cancelled(&e, proposal_id);
     }
 
+    /// Get the details of a proposal
+    /// The function returns the details of a specific proposal.
     pub fn get_proposal(e: Env, proposal_id: u128) -> Proposal {
         get_proposal(&e, &proposal_id)
     }
 
+    /// Get the proposals created by a user
+    /// The function returns the list of proposals created by a specific user.
     pub fn get_proposals(e: Env) -> Vec<Proposal> {
         let proposal_ids = get_proposals_by_user(&e);
 

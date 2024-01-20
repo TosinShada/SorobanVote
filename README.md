@@ -1,6 +1,14 @@
 # Soroban Vote DAPP
 
-This project is a simple DAPP that allows users to stream payments to each other. It is built using [Soroban](https://soroban.stellar.org/), [Next.js](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/).
+This is a Soroban Smart Contract project showing how to create a proposal and have other people vote on the proposal. It is built using [Soroban](https://soroban.stellar.org/), [Next.js](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/).
+
+## Overview
+The project contains a Soroban Smart Contract and a frontend project. The Soroban Smart Contract project contains the smart contract required to mmanage the proposals and keep track of the votes for and against them. It is deployed on the Stellar Soroban Network. The frontend project contains the frontend code that interacts with the smart contract. It showcases how to create a proposal and have other people vote on the proposal. 
+
+You can check out the blog post for this project [here](https://dev.to/shada/soroban-series-3-building-a-soroban-voting-contract-5638) as well as a video tutorial explaining the project [here](https://www.youtube.com/watch?v=FsD_Zx0y6tU).
+
+### Demo
+You can check out the demo of the project [here](https://soroban-vote.vercel.app/).
 
 ## Installation
 

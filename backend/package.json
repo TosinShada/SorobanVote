@@ -3,10 +3,10 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-      "stream:setup": "bash initialize.sh && yarn stream:dependencies && yarn install",
-      "stream:clean": "rm -rf ./.soroban-vote-dapp/vote_id ../packages/votedapp-client",
-      "stream:reset": "yarn stream:clean && yarn stream:setup",
-      "stream:dependencies": "cargo build --target wasm32-unknown-unknown --release && soroban contract bindings typescript --wasm ./target/wasm32-unknown-unknown/release/soroban_vote_contract.wasm --id $(cat ./.soroban-vote-dapp/vote_id) --output-dir ../packages/votedapp-client --network $(cat ./.soroban-vote-dapp/network)"
+      "setup": "bash initialize.sh && yarn dependencies && yarn install",
+      "clean": "rm -rf ./.soroban-vote-dapp/vote_id ../packages/votedapp-client",
+      "reset": "yarn clean && yarn setup",
+      "dependencies": "cargo build --target wasm32-unknown-unknown --release && soroban contract bindings typescript --wasm ./target/wasm32-unknown-unknown/release/soroban_vote_contract.wasm --id $(cat ./.soroban-vote-dapp/vote_id) --output-dir ../packages/votedapp-client --network $(cat ./.soroban-vote-dapp/network)"
     },
     "devDependencies": {
       "@types/node": "20.5.0",

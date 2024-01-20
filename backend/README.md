@@ -16,7 +16,7 @@ Install Dependencies
 
 Make sure to start from a clean setup:
 ```
-yarn stream:clean
+yarn clean
 ```
 
 ### Deploy on Testnet
@@ -25,7 +25,7 @@ yarn stream:clean
 
 1. Deploy the contracts and initialize them
 
-       yarn stream:setup
+       yarn setup
 
    This runs `./initialize.sh` behind the scenes, which will create a `token-admin` identity for you (`soroban config identity create token-admin`) and deploy the [vote contract](./contracts/vote), with this account as admin.
 

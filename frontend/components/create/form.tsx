@@ -107,7 +107,13 @@ export function CreateProposalForm() {
                 description: `${error?.message ?? 'Unknown error'}`,
               })
             })
+            .finally(() => {
+              setIsLoading(false)
+              form.reset(defaultValues)
+            })
         } else {
+          setIsLoading(false)
+          form.reset(defaultValues)
           toast({
             variant: 'destructive',
             title: 'Uh oh! Something went wrong.',
@@ -117,15 +123,13 @@ export function CreateProposalForm() {
       })
       .catch((error: any) => {
         console.log('error', error)
+        setIsLoading(false)
+        form.reset(defaultValues)
         toast({
           variant: 'destructive',
           title: 'Uh oh! Something went wrong.',
           description: `${error?.message ?? 'Unknown error'}`,
         })
-      })
-      .finally(() => {
-        setIsLoading(false)
-        form.reset(defaultValues)
       })
   }
 

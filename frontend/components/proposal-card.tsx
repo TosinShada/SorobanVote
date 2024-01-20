@@ -77,17 +77,18 @@ export function ProposalCard(prop: ProposalCardProps) {
               description: `${error?.message ?? 'Unknown error'}`,
             })
           })
+          .finally(() => {
+            setIsLoading(false)
+          })
       })
       .catch((error: any) => {
         console.log('error', error)
+        setIsLoading(false)
         toast({
           variant: 'destructive',
           title: 'Uh oh! Something went wrong.',
           description: `${error?.message ?? 'Unknown error'}`,
         })
-      })
-      .finally(() => {
-        setIsLoading(false)
       })
   }
 
